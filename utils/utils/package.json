@@ -5,6 +5,9 @@
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
   "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "lib/index.js",
   "directories": {
     "lib": "lib",
@@ -15,5 +18,6 @@
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
-  }
+  },
+  "gitHead": "eaae60f94377d06f182062170c17e43261b3e730"
 }

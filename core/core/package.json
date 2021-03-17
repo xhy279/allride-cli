@@ -5,6 +5,9 @@
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
   "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "lib/index.js",
   "bin": {
     "allride-cli": "bin/index.js"
@@ -22,5 +25,5 @@
   "dependencies": {
     "@allride/cli-utils": "^1.0.1"
   },
-  "gitHead": "46533957ebf8aa3c179b39676c6099d243509558"
+  "gitHead": "eaae60f94377d06f182062170c17e43261b3e730"
 }
