@@ -1,6 +1,6 @@
 {
   "name": "@allride/cli-core",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "allride cli-core",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
@@ -21,5 +21,6 @@
   },
   "dependencies": {
     "@allride/cli-utils": "^1.0.1"
-  }
+  },
+  "gitHead": "46533957ebf8aa3c179b39676c6099d243509558"
 }
