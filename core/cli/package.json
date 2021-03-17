@@ -1,11 +1,17 @@
 {
   "name": "@allride/cli-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "allride cli-core",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
   "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "lib/index.js",
+  "bin": {
+    "allride-cli": "bin/index.js"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -17,6 +23,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@allride/cli-utils": "^1.0.0"
-  }
+    "@allride/cli-utils": "file:../../utils/utils"
+  },
+  "gitHead": "eaae60f94377d06f182062170c17e43261b3e730"
 }
