@@ -1,6 +1,6 @@
 {
   "name": "@allride/cli-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "allride cli-core",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
@@ -17,6 +17,6 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@allride/cli-utils": "^1.0.0"
+    "@allride/cli-utils": "^1.0.1"
   }
 }
