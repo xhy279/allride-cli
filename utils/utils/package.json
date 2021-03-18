@@ -1,6 +1,6 @@
 {
   "name": "@allride/utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "allride utils",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
@@ -19,7 +19,5 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
-  "gitHead": "eaae60f94377d06f182062170c17e43261b3e730",
-  "dependencies": {
-  }
+  "gitHead": "eaae60f94377d06f182062170c17e43261b3e730"
 }
