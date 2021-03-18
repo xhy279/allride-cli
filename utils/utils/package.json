@@ -1,7 +1,7 @@
 {
-  "name": "@allride/cli-utils",
+  "name": "@allride/utils",
   "version": "1.0.1",
-  "description": "allride cli-utils",
+  "description": "allride utils",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
   "license": "ISC",

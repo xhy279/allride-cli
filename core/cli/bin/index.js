@@ -1,5 +1,9 @@
 #! /usr/bin/env node
 
-const utils = require('@allride/cli-utils');
+const importLocal = require('import-local');
 
-utils();
+if (importLocal(__filename)) {
+  require('npmlog').info('allride-cli', "正在使用 allride-cli 本地版本");
+} else {
+  require('../lib')(process.argv.slice(2));
+}

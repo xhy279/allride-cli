@@ -23,7 +23,18 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@allride/cli-utils": "file:../../utils/utils"
+    "@allride/get-npm-info": "file:../../utils/get-npm-info",
+    "@allride/log": "file:../../utils/log",
+    "colors": "^1.4.0",
+    "dedent": "^0.7.0",
+    "dotenv": "^8.2.0",
+    "import-local": "^3.0.2",
+    "minimist": "^1.2.5",
+    "npmlog": "^4.1.2",
+    "path-exists": "^4.0.0",
+    "root-check": "^1.0.0",
+    "semver": "^7.3.4",
+    "user-home": "^2.0.0"
   },
   "gitHead": "eaae60f94377d06f182062170c17e43261b3e730"
 }
