@@ -1,7 +1,7 @@
 {
-  "name": "@allride/cli-core",
-  "version": "1.0.2",
-  "description": "allride cli-core",
+  "name": "@allride/core",
+  "version": "1.0.1",
+  "description": "allride cli core",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
   "license": "ISC",
