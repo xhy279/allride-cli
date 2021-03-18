@@ -1,6 +1,6 @@
 {
   "name": "@allride/get-npm-info",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "> TODO: description",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "https://github.com/xhy279/allride-cli#readme",
@@ -27,5 +27,8 @@
     "axios": "^0.21.1",
     "semver": "^7.3.4",
     "url-join": "^4.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
