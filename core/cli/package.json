@@ -1,6 +1,6 @@
 {
   "name": "@allride-cli/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "allride cli core",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "",
@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@allride-cli/get-npm-info": "file:../../utils/get-npm-info",
-    "@allride-cli/log": "file:../../utils/log",
     "@allride-cli/init": "file:../../commands/init",
+    "@allride-cli/log": "file:../../utils/log",
     "colors": "^1.4.0",
     "commander": "^7.1.0",
     "dedent": "^0.7.0",
