@@ -1,11 +1,11 @@
-# `@allride-cli/log`
+# `@allride-cli/init`
 
 > TODO: description
 
 ## Usage
 
 ```
-const cliLog = require('@allride/cli-log');
+const init = require('@allride-cli/init');
 
 // TODO: DEMONSTRATE API
 ```

@@ -1,5 +1,5 @@
 {
-  "name": "@allride-cli/get-npm-info",
+  "name": "@allride-cli/init",
   "version": "1.0.2",
   "description": "> TODO: description",
   "author": "jeremy <huanyu.xia@allride.ai>",
@@ -13,6 +13,9 @@
   "files": [
     "lib"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xhy279/allride-cli.git"
@@ -22,13 +25,5 @@
   },
   "bugs": {
     "url": "https://github.com/xhy279/allride-cli/issues"
-  },
-  "dependencies": {
-    "axios": "^0.21.1",
-    "semver": "^7.3.4",
-    "url-join": "^4.0.1"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

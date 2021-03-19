@@ -1,5 +1,5 @@
 {
-  "name": "@allride/core",
+  "name": "@allride-cli/core",
   "version": "1.0.2",
   "description": "allride cli core",
   "author": "jeremy <huanyu.xia@allride.ai>",
@@ -23,9 +23,11 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@allride/get-npm-info": "file:../../utils/get-npm-info",
-    "@allride/log": "file:../../utils/log",
+    "@allride-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@allride-cli/log": "file:../../utils/log",
+    "@allride-cli/init": "file:../../commands/init",
     "colors": "^1.4.0",
+    "commander": "^7.1.0",
     "dedent": "^0.7.0",
     "dotenv": "^8.2.0",
     "import-local": "^3.0.2",

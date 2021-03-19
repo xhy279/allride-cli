@@ -2,6 +2,6 @@
 
 const log = require('../lib');
 
-describe('@allride/log', () => {
+describe('@allride-cli/log', () => {
     it('needs tests');
 });

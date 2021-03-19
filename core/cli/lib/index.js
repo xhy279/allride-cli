@@ -5,15 +5,18 @@ module.exports = core;
 const dedent = require('dedent');
 const colors = require('colors');
 const semver = require('semver');
-const log = require('@allride/log');
+const log = require('@allride-cli/log');
 const userHome = require('user-home');
 const pathExists = require('path-exists');
-
 const path = require('path');
+const commander = require('commander');
+
 const pkg = require('../package.json');
 const consts = require('./const');
+const { Command } = require('commander');
 
 let args;
+const program = new commander.Command();
 
 async function core(arg) {
 	try {
@@ -21,9 +24,10 @@ async function core(arg) {
 		checkNodeVersion();
 		checkRoot();
 		checkUserHome();
-		checkInputArgs();
+		// checkInputArgs();
 		checkEnv();
 		await checkGlobalUpdate();
+		registerCommand();
 	} catch (e) {
 		log.error(e.message);
 	}
@@ -101,7 +105,7 @@ async function checkGlobalUpdate() {
 	const currentVersion = pkg.version;
 	const npmName = pkg.name;
 	// 调用npm api获得线上所有版本号, 提取所有版本号，对比哪些是大于当前版本号
-	const { getNpmSemversion } = require('@allride/get-npm-info');
+	const { getNpmSemversion } = require('@allride-cli/get-npm-info');
 	const latestVersion = await getNpmSemversion(npmName, currentVersion);
 	if (latestVersion && semver.gt(latestVersion, currentVersion)) {
 		log.warn(
@@ -111,4 +115,44 @@ async function checkGlobalUpdate() {
 		);
 	}
 	// 获取最新版本号，提示用户更新到该版本
+}
+
+function registerCommand() {
+	program
+		.name(Object.keys(pkg.bin)[0])
+		.usage('<command> [options]')
+		.version(pkg.version)
+		.option('-d, --debug', '是否开启调试模式', false);
+
+	program	
+		.command('init [projectName]')
+		.option('-f, --force', '是否强制初始化项目')
+		.action(init)
+
+	// 开启debug模式
+	program.on('option:debug', function () {
+		if (program.debug) {
+			process.env.LOG_LEVEL = 'verbose';
+		} else {
+			process.env.LOG_LEVEL = 'info';
+		}
+		log.level = process.env.LOG_LEVEL;
+	});
+
+	// 对未知命令监听
+	program.on('command:*', function(obj) {
+		const availableCommands = program.commands.map(cmd => cmd.name());
+		console.log(`未知命令: ${obj[0]}`.red);
+		if (availableCommands.length > 0) {
+			console.log(`可用命令: ${availableCommands.join(',')}`.red);
+		}
+	})
+
+	
+	program.parse(process.argv);
+
+	if (program.args && program.args.length < 1) {	
+		program.outputHelp();
+		console.log();
+	}
 }
