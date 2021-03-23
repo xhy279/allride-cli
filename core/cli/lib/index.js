@@ -10,27 +10,33 @@ const userHome = require('user-home');
 const pathExists = require('path-exists');
 const path = require('path');
 const commander = require('commander');
+const init = require('@allride-cli/init');
+const exec = require('@allride-cli/exec');
 
 const pkg = require('../package.json');
 const consts = require('./const');
-const { Command } = require('commander');
 
-let args;
 const program = new commander.Command();
 
 async function core(arg) {
 	try {
-		checkPkgVersion();
-		checkNodeVersion();
-		checkRoot();
-		checkUserHome();
-		// checkInputArgs();
-		checkEnv();
-		await checkGlobalUpdate();
+		await prepare();
 		registerCommand();
 	} catch (e) {
 		log.error(e.message);
+		if (process.env.LOG_LEVEL === 'verbose') {
+			console.log(e);
+		}
 	}
+}
+
+async function prepare() {
+	checkPkgVersion();
+	checkNodeVersion();
+	checkRoot();
+	checkUserHome();
+	checkEnv();
+	await checkGlobalUpdate();
 }
 
 function checkPkgVersion() {
@@ -55,21 +61,6 @@ function checkUserHome() {
 	if (!userHome || !pathExists(userHome)) {
 		throw new Error('当前登录用户主目录不存在'.red);
 	}
-}
-
-function checkInputArgs() {
-	const minimist = require('minimist');
-	args = minimist(process.argv.slice(2));
-	checkArgs();
-}
-
-function checkArgs() {
-	if (args.debug) {
-		process.env.LOG_LEVEL = 'debug';
-	} else {
-		process.env.LOG_LEVEL = 'info';
-	}
-	log.level = process.env.LOG_LEVEL;
 }
 
 function checkEnv() {
@@ -122,16 +113,17 @@ function registerCommand() {
 		.name(Object.keys(pkg.bin)[0])
 		.usage('<command> [options]')
 		.version(pkg.version)
-		.option('-d, --debug', '是否开启调试模式', false);
+		.option('-d, --debug', '是否开启调试模式', true)
+		.option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '');
 
-	program	
+	program
 		.command('init [projectName]')
 		.option('-f, --force', '是否强制初始化项目')
-		.action(init)
+		.action(exec);
 
 	// 开启debug模式
 	program.on('option:debug', function () {
-		if (program.debug) {
+		if (program.opts().debug) {
 			process.env.LOG_LEVEL = 'verbose';
 		} else {
 			process.env.LOG_LEVEL = 'info';
@@ -139,20 +131,24 @@ function registerCommand() {
 		log.level = process.env.LOG_LEVEL;
 	});
 
-	// 对未知命令监听
-	program.on('command:*', function(obj) {
-		const availableCommands = program.commands.map(cmd => cmd.name());
-		console.log(`未知命令: ${obj[0]}`.red);
-		if (availableCommands.length > 0) {
-			console.log(`可用命令: ${availableCommands.join(',')}`.red);
-		}
-	})
+	// 指定targetPath
+	program.on('option:targetPath', function () {
+		process.env.CLI_TARGET_PATH = program.opts().targetPath;
+	});
 
-	
+	// 对未知命令监听
+	program.on('command:*', function (obj) {
+		const availableCommands = program.commands.map((cmd) => cmd.name());
+		log.error(`未知命令: ${obj[0]}`.red);
+		if (availableCommands.length > 0) {
+			log.notice(`可用命令: ${availableCommands.join(',')}`.red);
+		}
+	});
+
 	program.parse(process.argv);
 
-	if (program.args && program.args.length < 1) {	
+	if (program.args && program.args.length < 1) {
 		program.outputHelp();
-		console.log();
+		log.info();
 	}
 }

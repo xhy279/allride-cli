@@ -1,0 +1,38 @@
+{
+  "name": "@allride-cli/package",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "jeremy <huanyu.xia@allride.ai>",
+  "homepage": "https://github.com/xhy279/allride-cli#readme",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.yarnpkg.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xhy279/allride-cli.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/xhy279/allride-cli/issues"
+  },
+  "dependencies": {
+    "@allride-cli/format-path": "file:../../utils/format-path",
+    "@allride-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@allride-cli/utils": "file:../../utils/utils",
+    "fs-extra": "^9.1.0",
+    "npminstall": "^4.10.0",
+    "path-exists": "^4.0.0",
+    "pkg-dir": "^5.0.0"
+  }
+}

@@ -4,6 +4,8 @@ module.exports = {
 	getNpmInfo,
 	getNpmVersions,
 	getNpmSemversion,
+	getDefaultRegistry,
+	getNpmLatestVersion,
 };
 
 const axios = require('axios');
@@ -50,7 +52,15 @@ function getSemverVersions(baseVersion, versions) {
 async function getNpmSemversion(npmName, baseVersion, registry) {
 	const versions = await getNpmVersions(npmName, registry);
 	const updatedVersions = getSemverVersions(baseVersion, versions);
-  if (updatedVersions && updatedVersions.length) {
-    return updatedVersions[0];
-  }
+	if (updatedVersions && updatedVersions.length) {
+		return updatedVersions[0];
+	}
+}
+
+async function getNpmLatestVersion(npmName, registry) {
+	const versions = await getNpmVersions(npmName, registry);
+	if (versions) {
+		return versions.sort((a, b) => semver.gt(b, a));
+	}
+	return null;
 }
