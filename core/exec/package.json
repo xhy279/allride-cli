@@ -1,6 +1,6 @@
 {
   "name": "@allride-cli/exec",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "allride-cli execute package",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "https://github.com/xhy279/allride-cli#readme",
@@ -27,7 +27,7 @@
     "url": "https://github.com/xhy279/allride-cli/issues"
   },
   "dependencies": {
-    "@allride-cli/package": "file:../../models/package",
-    "@allride-cli/log": "file:../../utils/log"
+    "@allride-cli/log": "file:../../utils/log",
+    "@allride-cli/package": "file:../../models/package"
   }
 }
