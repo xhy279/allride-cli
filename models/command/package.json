@@ -25,5 +25,11 @@
   },
   "bugs": {
     "url": "https://github.com/xhy279/allride-cli/issues"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "semver": "^7.3.5",
+    "@allride-cli/log": "file:../../utils/log",
+    "@allride-cli/utils": "file:../../utils/utils"
   }
 }

@@ -32,7 +32,6 @@ async function core(arg) {
 
 async function prepare() {
 	checkPkgVersion();
-	checkNodeVersion();
 	checkRoot();
 	checkUserHome();
 	checkEnv();
@@ -43,15 +42,7 @@ function checkPkgVersion() {
 	log.notice('allride-cli 脚手架版本:'.brightCyan, pkg.version);
 }
 
-function checkNodeVersion() {
-	const currentVersion = process.version;
-	const lowestVersion = consts.LOWEST_NODE_VERSION;
-	if (!semver.gte(currentVersion, lowestVersion)) {
-		throw new Error(
-			`allride-cli 需要安装v${lowestVersion}及以上版本(当前Node版本为: ${currentVersion})`.red
-		);
-	}
-}
+
 
 function checkRoot() {
 	require('root-check')();
