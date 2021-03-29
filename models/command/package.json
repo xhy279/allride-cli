@@ -1,6 +1,6 @@
 {
   "name": "@allride-cli/command",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "> TODO: description",
   "author": "jeremy <huanyu.xia@allride.ai>",
   "homepage": "https://github.com/xhy279/allride-cli#readme",
@@ -27,9 +27,9 @@
     "url": "https://github.com/xhy279/allride-cli/issues"
   },
   "dependencies": {
-    "colors": "^1.4.0",
-    "semver": "^7.3.5",
     "@allride-cli/log": "file:../../utils/log",
-    "@allride-cli/utils": "file:../../utils/utils"
+    "@allride-cli/utils": "file:../../utils/utils",
+    "colors": "^1.4.0",
+    "semver": "^7.3.5"
   }
 }
