@@ -1,10 +1,17 @@
 'use strict';
-const inquirer = require('inquirer');
 const Command = require('@allride-cli/command');
+const Package = require('@allride-cli/package');
 const log = require('@allride-cli/log');
+const { spinnerStart } = require('@allride-cli/utils');
+
+const inquirer = require('inquirer');
 const fs = require('fs');
 const fse = require('fs-extra');
 const semver = require('semver');
+const userHome = require('user-home');
+
+const getProjectTemplate = require('./getProjectTemplate');
+const { sleep } = require('../../../models/package/node_modules/@allride-cli/utils/lib');
 
 const TYPE_PROJECT = 'project';
 const TYPE_COMPONENT = 'component';
@@ -22,28 +29,58 @@ class InitCommand extends Command {
 			// 1. 准备阶段
 			const projectInfo = await this.prepare();
 			// 2. 下载模板
-      if (projectInfo) {
-        console.log(projectInfo);
-      }
+			if (projectInfo) {
+				log.verbose('projectInfo', projectInfo);
+				this.projectInfo = projectInfo;
+				await this.downloadTemplate();
+			}
 			// 3. 安装模板
 		} catch (e) {
-      console.log(e)
+			console.log(e);
 			log.error(e.message);
 		}
 	}
 
-  /**
-   * 通过项目模板api获取项目模板信息
-   * 1. 通过egg.js搭建一套后端系统
-   * 2. 通过npm存储项目模板
-   * 3. 将项目模板存储到mongodb中
-   * 4. 通过egg.js获取mongodb中的数据并通过api返回
-   */
-  downloadTemplate() {
-
-  }
+	/**
+	 * 通过项目模板api获取项目模板信息
+	 * 1. 通过egg.js搭建一套后端系统
+	 * 2. 通过npm存储项目模板
+	 * 3. 将项目模板存储到mongodb中
+	 * 4. 通过egg.js获取mongodb中的数据并通过api返回
+	 */
+	async downloadTemplate() {
+		const { projectTemplate } = this.projectInfo;
+		const templateInfo = this.template.find(
+			(temp) => temp.npmName === projectTemplate
+		);
+    const targetPath = path.resolve(userHome, '.allride-cli', 'template');
+    const storeDir = path.resolve(userHome, '.allride-cli', 'template', 'node_modules');
+    const { npmName, version } = templateInfo;
+    const templateNpm = new Package({
+      targetPath,
+      storeDir,
+      packageName: npmName,
+      packageVersion: version,
+    });
+    if (!await templateNpm.exists()) {
+      const spinnerString = "▉▊▋▌▍▎▏▎▍▌▋▊▉";
+      const loadingMessage = '全速下载模板中，不爽可以ctrl+C';
+      const spinner = spinnerStart(loadingMessage, spinnerString);
+      await sleep(1500);
+      await templateNpm.install();
+      spinner.stop(true);
+    } else {
+      await templateNpm.update();
+    }
+	}
 
 	async prepare() {
+		// 检查项目模板是否为空
+		const template = await getProjectTemplate();
+		if (!template || template.length === 0) {
+			throw new Error('项目模板不存在');
+		}
+		this.template = template;
 		const localPath = process.cwd();
 		let ifContinue = false;
 		// 1. 判断当前目录是否为空
@@ -130,7 +167,7 @@ class InitCommand extends Command {
 					type: 'input',
 					name: 'projectVersion',
 					message: '请输入项目版本号',
-					default: '',
+					default: '1.0.0',
 					validate: function (v) {
 						const done = this.async();
 						setTimeout(function () {
@@ -146,14 +183,20 @@ class InitCommand extends Command {
 						return !!semver.valid(v) ? semver.valid(v) : v;
 					},
 				},
+				{
+					type: 'list',
+					name: 'projectTemplate',
+					message: '请选择项目模板',
+					choices: this.createTemplateChoice(),
+				},
 			]);
-      projectInfo = {
-        type,
-        ...project,
-      };
+			projectInfo = {
+				type,
+				...project,
+			};
 		} else if (type === TYPE_COMPONENT) {
 		}
-		
+
 		return projectInfo;
 	}
 
@@ -163,6 +206,13 @@ class InitCommand extends Command {
 			(file) => !file.startsWith('.') && ['node_modules'].indexOf(file) < 0
 		);
 		return !fileList || fileList.length <= 0;
+	}
+
+	createTemplateChoice() {
+		return this.template.map((item) => ({
+			name: item.name,
+			value: item.npmName,
+		}));
 	}
 }
 
