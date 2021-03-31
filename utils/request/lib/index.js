@@ -7,6 +7,9 @@ const BASE_URL = process.env.CLI_BASE_URL
 const request = axios.create({
 	baseURL: BASE_URL,
 	timeout: 5000,
+  headers: {
+    'Cache-Control': 'no-cache'
+  },
 });
 
 request.interceptors.response.use(

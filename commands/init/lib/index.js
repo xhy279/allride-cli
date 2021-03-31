@@ -50,6 +50,7 @@ class InitCommand extends Command {
 	 */
 	async downloadTemplate() {
 		const { projectTemplate } = this.projectInfo;
+    console.log(this.template);
 		const templateInfo = this.template.find(
 			(temp) => temp.npmName === projectTemplate
 		);
@@ -67,10 +68,27 @@ class InitCommand extends Command {
       const loadingMessage = '全速下载模板中，不爽可以ctrl+C';
       const spinner = spinnerStart(loadingMessage, spinnerString);
       await sleep(1500);
-      await templateNpm.install();
-      spinner.stop(true);
+      try {
+        await templateNpm.install();
+        log.success('下载模板成功了');
+      } catch (error) {
+        throw error;
+      } finally {
+        spinner.stop(true);
+      }
     } else {
-      await templateNpm.update();
+      const spinnerString = "⣾⣽⣻⢿⡿⣟⣯⣷";
+      const loadingMessage = '全速更新模板中，不爽可以ctrl+C';
+      const spinner = spinnerStart(loadingMessage, spinnerString);
+      await sleep(1500);
+      try {
+        await templateNpm.update();
+        log.success('更新模板成功了');
+      } catch (error) {
+        throw error;
+      } finally {
+        spinner.stop(true);
+      }
     }
 	}
 
