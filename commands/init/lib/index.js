@@ -2,7 +2,7 @@
 const Command = require('@allride-cli/command');
 const Package = require('@allride-cli/package');
 const log = require('@allride-cli/log');
-const { spinnerStart } = require('@allride-cli/utils');
+const { spinnerStart, sleep, execAsync } = require('@allride-cli/utils');
 
 const inquirer = require('inquirer');
 const fs = require('fs');
@@ -11,10 +11,12 @@ const semver = require('semver');
 const userHome = require('user-home');
 
 const getProjectTemplate = require('./getProjectTemplate');
-const { sleep } = require('../../../models/package/node_modules/@allride-cli/utils/lib');
 
 const TYPE_PROJECT = 'project';
 const TYPE_COMPONENT = 'component';
+const TEMPLATE_TYPE_NORMAL = 'normal';
+const TEMPLATE_TYPE_CUSTOM = 'custom';
+const WHITE_COMMAND = ['npm', 'cnpm', 'yarn'];
 
 class InitCommand extends Command {
 	init() {
@@ -35,61 +37,142 @@ class InitCommand extends Command {
 				await this.downloadTemplate();
 			}
 			// 3. 安装模板
+			await this.installTemplate();
 		} catch (e) {
 			console.log(e);
 			log.error(e.message);
 		}
 	}
 
+	async installTemplate() {
+		if (this.templateInfo) {
+			if (!this.templateInfo.type) {
+				this.templateInfo.type = TEMPLATE_TYPE_NORMAL;
+			}
+			if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
+				await this.installNormalTemplate();
+			} else if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
+				await this.installCustomTemplate();
+			} else {
+				throw new Error('无法识别项目模板类型');
+			}
+		} else {
+			throw new Error('模板信息不存在');
+		}
+	}
+
+	async installNormalTemplate() {
+		let spinner = spinnerStart('正在安装模板中', '|/-\\');
+		await sleep();
+		try {
+			const templatePath = path.resolve(
+				this.templateNpm.cacheFilePath,
+				'template'
+			);
+			const targetInstallPath = process.cwd();
+			fse.ensureDirSync(templatePath);
+			fse.ensureDirSync(targetInstallPath);
+			fse.copySync(templatePath, targetInstallPath);
+		} catch (error) {
+			throw error;
+		} finally {
+			spinner.stop(true);
+			if (!this.isDirEmpty(process.cwd())) {
+				log.success(`${this.templateInfo.name}安装成功`);
+			}
+		}
+		// install deps, start command
+		const { installCommand, startCommand } = this.templateInfo;
+    await this.execCommand(installCommand, '安装依赖失败！');
+    await this.execCommand(startCommand, '执行命令失败');
+	}
+
+	async execCommand(cmd, errorMsg) {
+		let installResult;
+		if (cmd) {
+			const cmdWithArgs = cmd.split(' ');
+			const command = this.checkCommand(cmdWithArgs[0]);
+			if (!command) {
+				throw new Error(`命令${command}不存在！`);
+			}
+			const args = cmdWithArgs.slice(1);
+			installResult = await execAsync(command, args, {
+				stdio: 'inherit',
+				cwd: process.cwd(),
+			});
+		}
+  
+		if (installResult !== 0) {
+			throw new Error(errorMsg);
+		}
+		return installResult;
+	}
+
+	checkCommand(cmd) {
+		return WHITE_COMMAND.indexOf(cmd) < 0 ? null : cmd;
+	}
+
+	async installCustomTemplate() {
+		console.log(this.templateInfo);
+	}
+
 	/**
-	 * 通过项目模板api获取项目模板信息
-	 * 1. 通过egg.js搭建一套后端系统
-	 * 2. 通过npm存储项目模板
-	 * 3. 将项目模板存储到mongodb中
-	 * 4. 通过egg.js获取mongodb中的数据并通过api返回
+	 * 暂时用github pages host静态json文件
 	 */
 	async downloadTemplate() {
 		const { projectTemplate } = this.projectInfo;
-    console.log(this.template);
 		const templateInfo = this.template.find(
 			(temp) => temp.npmName === projectTemplate
 		);
-    const targetPath = path.resolve(userHome, '.allride-cli', 'template');
-    const storeDir = path.resolve(userHome, '.allride-cli', 'template', 'node_modules');
-    const { npmName, version } = templateInfo;
-    const templateNpm = new Package({
-      targetPath,
-      storeDir,
-      packageName: npmName,
-      packageVersion: version,
-    });
-    if (!await templateNpm.exists()) {
-      const spinnerString = "▉▊▋▌▍▎▏▎▍▌▋▊▉";
-      const loadingMessage = '全速下载模板中，不爽可以ctrl+C';
-      const spinner = spinnerStart(loadingMessage, spinnerString);
-      await sleep(1500);
-      try {
-        await templateNpm.install();
-        log.success('下载模板成功了');
-      } catch (error) {
-        throw error;
-      } finally {
-        spinner.stop(true);
-      }
-    } else {
-      const spinnerString = "⣾⣽⣻⢿⡿⣟⣯⣷";
-      const loadingMessage = '全速更新模板中，不爽可以ctrl+C';
-      const spinner = spinnerStart(loadingMessage, spinnerString);
-      await sleep(1500);
-      try {
-        await templateNpm.update();
-        log.success('更新模板成功了');
-      } catch (error) {
-        throw error;
-      } finally {
-        spinner.stop(true);
-      }
-    }
+		this.templateInfo = templateInfo;
+		const targetPath = path.resolve(userHome, '.allride-cli', 'template');
+		const storeDir = path.resolve(
+			userHome,
+			'.allride-cli',
+			'template',
+			'node_modules'
+		);
+		const { npmName, version } = templateInfo;
+		const templateNpm = new Package({
+			targetPath,
+			storeDir,
+			packageName: npmName,
+			packageVersion: version,
+		});
+		this.templateNpm = templateNpm;
+		if (!(await templateNpm.exists())) {
+			const spinnerString = '▉▊▋▌▍▎▏▎▍▌▋▊▉';
+			const loadingMessage = '全速下载模板中，不爽可以ctrl+C';
+			const spinner = spinnerStart(loadingMessage, spinnerString);
+			await sleep(1500);
+			try {
+				await templateNpm.install();
+			} catch (error) {
+				throw error;
+			} finally {
+				spinner.stop(true);
+				if (templateNpm.exists()) {
+					log.success('下载模板成功');
+					this.templateInfo = templateInfo;
+				}
+			}
+		} else {
+			const spinnerString = '⣾⣽⣻⢿⡿⣟⣯⣷';
+			const loadingMessage = '全速更新模板中，不爽可以ctrl+C';
+			const spinner = spinnerStart(loadingMessage, spinnerString);
+			await sleep(1500);
+			try {
+				await templateNpm.update();
+			} catch (error) {
+				throw error;
+			} finally {
+				spinner.stop(true);
+				if (templateNpm.exists()) {
+					log.success('更新模板成功');
+					this.templateInfo = templateInfo;
+				}
+			}
+		}
 	}
 
 	async prepare() {
@@ -131,7 +214,10 @@ class InitCommand extends Command {
 				});
 				// 清空当前目录
 				if (confirmDelete) {
-					fse.emptyDirSync(localPath);
+          let spinner = spinnerStart('正在清空当前目录, 细节不重要', '■□▪▫');
+		      await sleep(1500);
+					await fse.emptyDir(localPath);
+          spinner.stop(true);
 				}
 			}
 		}
@@ -206,6 +292,13 @@ class InitCommand extends Command {
 					name: 'projectTemplate',
 					message: '请选择项目模板',
 					choices: this.createTemplateChoice(),
+				},
+				{
+					type: 'list',
+					name: 'primeMember',
+					message: '是否付费开启心悦会员模式',
+					default: true,
+					choices: [{ name: '是', value: true }],
 				},
 			]);
 			projectInfo = {
