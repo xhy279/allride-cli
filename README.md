@@ -9,7 +9,10 @@ npm install -g @allride-cli/core
 ```
 
 ## Usage
+
 ```bash
+mkdir project_folder  # 新建项目文件夹
+
 allride-cli init [projectName] [options]  #projectName 和 options都是可选项 
 ```
 
@@ -22,6 +25,7 @@ Options:
   -d, --debug                     是否开启调试模式 (default: true)
   -tp, --targetPath <targetPath>  是否指定本地调试文件路径 (default: "")
   -h, --help                      display help for command
+  -f, --force                     清空当前所在目录，并强制安装 小心使用
 ```
 
 模板目前支持正在使用的umiJS和[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin)(基于vue的一个很全的后台管理界面开发框架)。
