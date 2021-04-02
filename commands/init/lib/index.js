@@ -294,7 +294,7 @@ class InitCommand extends Command {
 			default: TYPE_PROJECT,
 			choices: [
 				{ name: '项目', value: TYPE_PROJECT },
-				{ name: '组件', value: TYPE_COMPONENT },
+				// { name: '组件', value: TYPE_COMPONENT },
 			],
 		});
 		log.verbose(type);
