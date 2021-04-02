@@ -32,7 +32,10 @@
     "@allride-cli/package": "file:../../models/package",
     "@allride-cli/request": "file:../../utils/request",
     "@allride-cli/utils": "file:../../utils/utils",
+    "ejs": "^3.1.6",
+    "glob": "^7.1.6",
     "inquirer": "^8.0.0",
+    "kebab-case": "^1.0.1",
     "semver": "^7.3.5",
     "user-home": "^2.0.0"
   }

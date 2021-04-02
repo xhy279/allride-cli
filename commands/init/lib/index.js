@@ -8,6 +8,8 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const fse = require('fs-extra');
 const semver = require('semver');
+const ejs = require('ejs');
+const glob = require('glob');
 const userHome = require('user-home');
 
 const getProjectTemplate = require('./getProjectTemplate');
@@ -39,8 +41,10 @@ class InitCommand extends Command {
 			// 3. 安装模板
 			await this.installTemplate();
 		} catch (e) {
-			console.log(e);
 			log.error(e.message);
+			if (process.env.LOG_LEVEL === 'verbose') {
+				console.log(e);
+			}
 		}
 	}
 
@@ -59,6 +63,49 @@ class InitCommand extends Command {
 		} else {
 			throw new Error('模板信息不存在');
 		}
+	}
+
+	async ejsRender({ ignore }) {
+		const dir = process.cwd();
+		const projectInfo = this.projectInfo;
+		return new Promise((resolve, reject) => {
+			glob(
+				'**',
+				{
+					cwd: dir,
+					ignore: ignore || '',
+					nodir: true,
+				},
+				(err, files) => {
+					if (err) {
+						reject(err);
+					}
+					Promise.all(
+						files.map((file) => {
+							const filePath = path.join(dir, file);
+							return new Promise((resolve1, reject1) => {
+								ejs.renderFile(filePath, projectInfo, {}, (err, result) => {
+									if (err) {
+										reject1(err);
+									} else {
+										fse.writeFileSync(filePath, result);
+										resolve1(result);
+									}
+								});
+							});
+						})
+					)
+						.then(() => {
+							resolve();
+						})
+						.catch((e) => {
+							if (process.env.LOG_LEVEL === 'verbose') {
+								console.log(e);
+							}
+						});
+				}
+			);
+		});
 	}
 
 	async installNormalTemplate() {
@@ -81,10 +128,12 @@ class InitCommand extends Command {
 				log.success(`${this.templateInfo.name}安装成功`);
 			}
 		}
+		const ignore = ['node_modules/**', 'public/**', '**/*.png', '**/*.gif'];
+		await this.ejsRender({ ignore });
 		// install deps, start command
 		const { installCommand, startCommand } = this.templateInfo;
-    await this.execCommand(installCommand, '安装依赖失败！');
-    await this.execCommand(startCommand, '执行命令失败');
+		await this.execCommand(installCommand, '安装依赖失败！');
+		await this.execCommand(startCommand, '执行启动命令失败');
 	}
 
 	async execCommand(cmd, errorMsg) {
@@ -101,7 +150,7 @@ class InitCommand extends Command {
 				cwd: process.cwd(),
 			});
 		}
-  
+
 		if (installResult !== 0) {
 			throw new Error(errorMsg);
 		}
@@ -113,7 +162,7 @@ class InitCommand extends Command {
 	}
 
 	async installCustomTemplate() {
-		console.log(this.templateInfo);
+		// console.log(this.templateInfo);
 	}
 
 	/**
@@ -214,10 +263,10 @@ class InitCommand extends Command {
 				});
 				// 清空当前目录
 				if (confirmDelete) {
-          let spinner = spinnerStart('正在清空当前目录, 细节不重要', '■□▪▫');
-		      await sleep(1500);
+					let spinner = spinnerStart('正在清空当前目录, 细节不重要', '■□▪▫');
+					await sleep(1500);
 					await fse.emptyDir(localPath);
-          spinner.stop(true);
+					spinner.stop(true);
 				}
 			}
 		}
@@ -226,7 +275,17 @@ class InitCommand extends Command {
 	}
 
 	async getProjectInfo() {
+		function isValidName(v) {
+			return /^[a-zA-Z]+([-][a-zA-Z0-9]*|[_][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(
+				v
+			);
+		}
 		let projectInfo = {};
+		let isProjectNameValid = false;
+		if (isValidName(this.projectName)) {
+			isProjectNameValid = true;
+			projectInfo.projectName = this.projectName;
+		}
 		// 3. 选择项目或者组件
 		const { type } = await inquirer.prompt({
 			type: 'list',
@@ -242,31 +301,32 @@ class InitCommand extends Command {
 
 		// 4. 获取项目基本信息  => return 项目基本信息(object)
 		if (type === TYPE_PROJECT) {
-			const project = await inquirer.prompt([
-				{
-					type: 'input',
-					name: 'projectName',
-					message: '请输入项目名称',
-					default: '',
-					validate: function (v) {
-						const done = this.async();
-						setTimeout(function () {
-							const valid = /^[a-zA-Z]+([-][a-zA-Z0-9]*|[_][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(
-								v
+			const projectPrompt = [];
+			const projectNamePrompt = {
+				type: 'input',
+				name: 'projectName',
+				message: '请输入项目名称',
+				default: '',
+				validate: function (v) {
+					const done = this.async();
+					setTimeout(function () {
+						if (!isValidName(v)) {
+							done(
+								'需要提供有效的项目名称(首字符为英文字母，字符仅允许下划线和连字符, 末尾为数字或英文字母)'
 							);
-							if (!valid) {
-								done(
-									'需要提供有效的项目名称(首字符为英文字母，字符仅允许下划线和连字符, 末尾为数字或英文字母)'
-								);
-								return;
-							}
-							done(null, true);
-						}, 0);
-					},
-					filter: function (v) {
-						return v;
-					},
+							return;
+						}
+						done(null, true);
+					}, 0);
 				},
+				filter: function (v) {
+					return v;
+				},
+			};
+			if (!isProjectNameValid) {
+				projectPrompt.push(projectNamePrompt);
+			}
+			projectPrompt.push(
 				{
 					type: 'input',
 					name: 'projectVersion',
@@ -299,15 +359,25 @@ class InitCommand extends Command {
 					message: '是否付费开启心悦会员模式',
 					default: true,
 					choices: [{ name: '是', value: true }],
-				},
-			]);
+				}
+			);
+			const project = await inquirer.prompt(projectPrompt);
 			projectInfo = {
+        ...projectInfo,
 				type,
 				...project,
 			};
 		} else if (type === TYPE_COMPONENT) {
 		}
-
+		if (projectInfo.projectName) {
+			projectInfo.name = projectInfo.projectName;
+			projectInfo.className = require('kebab-case')(
+				projectInfo.projectName
+			).replace(/^-/, '');
+		}
+		if (projectInfo.projectVersion) {
+			projectInfo.version = projectInfo.projectVersion;
+		}
 		return projectInfo;
 	}
 
